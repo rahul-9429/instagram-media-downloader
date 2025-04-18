@@ -8,11 +8,15 @@ const silkscreen = Silkscreen({ subsets: ["latin"], weight: "400" });
 export default function Home() {
   const [url, setUrl] = useState("");
   const [fetched, setFetched] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setFetched(null);
+
     try {
-      const response = await fetch(`http://127.0.0.1:5000/profile/?user=${url}`);
+      const response = await fetch(`https://insta-downloader-backend.vercel.app/profile/?user=${url}`);
       const blob = await response.blob();
       const imageUrl = URL.createObjectURL(blob);
       setFetched(imageUrl);
@@ -20,6 +24,8 @@ export default function Home() {
     } catch (error) {
       console.error("Error:", error);
       setFetched(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -27,7 +33,7 @@ export default function Home() {
     if (!fetched) return;
     const link = document.createElement("a");
     link.href = fetched;
-    link.download = `instagram_profile.jpg`;  
+    link.download = `instagram_profile.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -48,9 +54,12 @@ export default function Home() {
         />
         <button
           type="submit"
-          className="w-full cursor-pointer p-2 mt-4 font-bold bg-white/90 transition-colors duration-75 hover:bg-white rounded-md text-black"
+          disabled={isLoading}
+          className={`w-full cursor-pointer p-2 mt-4 font-bold transition-colors duration-75 rounded-md text-black ${
+            isLoading ? "bg-gray-400" : "bg-white/90 hover:bg-white"
+          }`}
         >
-          Search
+          {isLoading ? "Searching..." : "Search"}
         </button>
       </form>
 
